@@ -1,53 +1,147 @@
-export type ElementType = "木" | "火" | "土" | "金" | "水";
-export type Scene = "通勤" | "休闲" | "约会";
-export type Category = "上装" | "下装" | "连衣裙" | "外套" | "鞋履" | "配饰";
+export const ELEMENTS = ["木", "火", "土", "金", "水"] as const;
+export const SCENES = ["通勤", "休闲", "约会"] as const;
+export const CATEGORIES = ["上装", "下装", "连衣裙", "外套", "鞋履", "配饰"] as const;
+export const SEASONS = ["春", "夏", "秋", "冬", "四季"] as const;
 
-export interface ColorToken { name: string; hex: string; note: string; }
-export interface ElementTendency { element: ElementType; level: "偏弱" | "均衡" | "偏强"; note: string; }
+export type ElementType = (typeof ELEMENTS)[number];
+export type Scene = (typeof SCENES)[number];
+export type Category = (typeof CATEGORIES)[number];
+export type Season = (typeof SEASONS)[number];
+export type ElementBand = "少" | "适中" | "多";
 
-export interface UserProfile {
+export interface WardrobeColor {
+  name: string;
+  hex: string;
+}
+
+export interface ColorToken extends WardrobeColor {
+  note: string;
+}
+
+export interface UserProfileV3 {
   birthDate: string;
-  lunarBirthDate?: string;
-  birthTime?: string;
-  birthPlace?: string;
-  gender?: "女" | "男" | "不透露";
-  bazi?: string;
-  reflectionAnswers?: string[];
+  birthTime: string;
   scenes: Scene[];
   styles: string[];
-  favoriteColors: string[];
-  avoidColors: string[];
+  favoriteColors?: string[];
+  avoidColors?: string[];
 }
 
-export interface WardrobeItem { id: string; name: string; category: Category; primaryColor: string; secondaryColor?: string; scenes: Scene[]; seasons: string[]; tags: string[]; imageUrl?: string; enabled: boolean; }
-export interface OutfitSuggestion { scene: Scene; title: string; formula: string; reason: string; alternative: string; }
+export interface WardrobeItemV3 {
+  id: string;
+  name: string;
+  category: Category;
+  primaryColor: WardrobeColor;
+  secondaryColor?: WardrobeColor;
+  scenes: Scene[];
+  seasons: Season[];
+  tags: string[];
+  enabled: boolean;
+}
 
-export interface ProfileReading {
+export interface Pillar {
+  stem: string;
+  branch: string;
+  stemElement: ElementType;
+  branchElement: ElementType;
+}
+
+export interface ElementCount {
+  element: ElementType;
+  count: number;
+  band: ElementBand;
+}
+
+export interface BirthChart {
+  pillars: {
+    year: Pillar;
+    month: Pillar;
+    day: Pillar;
+    hour: Pillar;
+  };
+  elements: ElementCount[];
+  timezone: "Asia/Shanghai";
+  lateZiRule: "23:00-next-day";
+  algorithmVersion: "visible-elements-v1";
+}
+
+export interface ElementNote {
+  element: ElementType;
+  note: string;
+}
+
+export interface ProfileNarrative {
   title: string;
   summary: string;
-  tendencies: ElementTendency[];
+  elementNotes: ElementNote[];
   reflectionQuestions: string[];
-  disclaimer: string;
 }
 
-export interface DailyStyleReading {
+export interface OutfitSuggestionV4 {
+  scene: Scene;
+  title: string;
+  wardrobeItemIds: string[];
+  missingPieces: string[];
+  formula: string;
+  reason: string;
+  alternative: string;
+}
+
+export interface DailyStyleV4 {
   theme: string;
-  headline: string;
+  title: string;
   energy: string;
-  luckyColors: ColorToken[];
+  primaryColors: ColorToken[];
   supportingColors: ColorToken[];
-  mindfulColors: ColorToken[];
-  outfits: OutfitSuggestion[];
+  useSparinglyColors: ColorToken[];
+  outfits: OutfitSuggestionV4[];
 }
 
-export interface DailyReading {
+export interface DailyReadingV4 {
   date: string;
-  profileReading: ProfileReading;
-  dailyStyle: DailyStyleReading;
-  source: "demo" | "deepseek";
+  birthChart: BirthChart;
+  profileNarrative: ProfileNarrative;
+  dailyStyle: DailyStyleV4;
+  source: "demo" | "model";
+  provider: string;
+  model: string;
   promptVersion: string;
+  schemaVersion: string;
   generatedAt: string;
 }
 
-export interface DailyReadingRequest { profile?: UserProfile; wardrobe: WardrobeItem[]; date?: string; }
-export interface ModelStatus { configured: boolean; provider: "DeepSeek"; model: string; baseURL: string; promptVersion: string; }
+export interface DailyReadingRequestV4 {
+  profile: UserProfileV3;
+  wardrobe: WardrobeItemV3[];
+}
+
+export interface BirthChartRequest {
+  birthDate: string;
+  birthTime: string;
+}
+
+export interface ModelStatus {
+  state: "ready" | "unconfigured" | "invalid";
+  configured: boolean;
+  issueCode?: "MISSING_REQUIRED_FIELDS" | "INVALID_BASE_URL";
+  provider: string;
+  model: string;
+  promptVersion: string;
+  schemaVersion: string;
+}
+
+export interface ApiErrorBody {
+  error: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+}
+
+// Transitional aliases keep imports stable while the UI and storage move to v4.
+export type UserProfile = UserProfileV3;
+export type WardrobeItem = WardrobeItemV3;
+export type OutfitSuggestion = OutfitSuggestionV4;
+export type DailyStyleReading = DailyStyleV4;
+export type DailyReading = DailyReadingV4;
+export type DailyReadingRequest = DailyReadingRequestV4;

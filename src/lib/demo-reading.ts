@@ -1,32 +1,109 @@
-import { DailyReading } from "./types";
+import {
+  DAILY_READING_SCHEMA_VERSION,
+  hasCompleteOutfit,
+  isAvoidedColor,
+  isWardrobeItemEligible,
+  seasonForShanghaiDate,
+} from "./schemas";
+import { ELEMENTS, type BirthChart, type ColorToken, type DailyReadingV4, type UserProfileV3, type WardrobeItemV3 } from "./types";
 
-export const demoReading = (date = new Date().toLocaleDateString("zh-CN")): DailyReading => ({
-  date,
-  profileReading: {
-    title: "基础五行倾向 · 演示参考",
-    summary: "当前为未连接模型的演示内容。连接模型后，会根据你自填的八字或出生资料生成一份传统文化娱乐性倾向解读。",
-    tendencies: [
-      { element: "木", level: "均衡", note: "示例：可尝试用自然色与轻盈材质营造舒展感。" },
-      { element: "火", level: "偏弱", note: "示例：用小面积暖色增添活力即可。" },
-      { element: "土", level: "均衡", note: "示例：稳定色系适合做日常基底。" },
-      { element: "金", level: "偏强", note: "示例：留白与简洁线条会更舒适。" },
-      { element: "水", level: "均衡", note: "示例：雾蓝等柔和冷色可作为调和。" },
-    ],
-    reflectionQuestions: ["过去几年里，你是否经历过工作、学习或生活节奏的明显变化？", "你在高压阶段更倾向于独处整理，还是向身边人寻求支持？"],
-    disclaimer: "此为传统文化娱乐性内容，不是自动排盘或专业命理结论。",
-  },
-  dailyStyle: {
-    theme: "自然系色彩主题",
-    headline: "向上生长，也留一点呼吸感",
-    energy: "今天适合用清新的层次和自然材质，为日常节奏打开一点松弛空间。把注意力放在让自己感到舒展的细节上。",
-    luckyColors: [{ name: "苔藓绿", hex: "#667A51", note: "轻盈、稳定，适合作为主色" }, { name: "玉白", hex: "#F5F2E8", note: "为整体留出呼吸感" }],
-    supportingColors: [{ name: "雾蓝", hex: "#91A8B9", note: "为冷静感增加层次" }, { name: "茶褐", hex: "#8A6C4A", note: "用小面积平衡质感" }],
-    mindfulColors: [{ name: "高饱和正红", hex: "#D84434", note: "今天可减少大面积使用" }],
-    outfits: [
-      { scene: "通勤", title: "清醒的自然层次", formula: "玉白衬衫 + 苔藓绿下装 + 茶褐配饰", reason: "浅色上装提亮精神，低饱和绿色让通勤造型保持从容。", alternative: "没有绿色下装时，用雾蓝替换，并保留茶褐小包或皮带。" },
-      { scene: "休闲", title: "轻步慢行的周末感", formula: "苔藓绿针织 + 浅色牛仔 + 简洁运动鞋", reason: "自然色与浅色丹宁形成柔和对比，适合不费力的外出安排。", alternative: "将针织替换成同色系 T 恤，并加一件玉白外套。" },
-      { scene: "约会", title: "柔和而有记忆点", formula: "玉白连衣裙 / 上装 + 雾蓝外套 + 金色小饰品", reason: "明净底色与雾蓝层次让整体显得温柔、有分寸。", alternative: "以茶褐鞋履替代金色饰品，增加更稳重的质感。" },
-    ],
-  },
-  source: "demo", promptVersion: "style-v2", generatedAt: new Date().toISOString(),
-});
+export const DEMO_MODEL_NAME = "内置演示内容";
+
+interface DemoReadingOptions {
+  date: string;
+  birthChart: BirthChart;
+  profile: UserProfileV3;
+  wardrobe: WardrobeItemV3[];
+  provider?: string;
+  model?: string;
+  promptVersion: string;
+}
+
+const PALETTE: ColorToken[] = [
+  { name: "苔藓绿", hex: "#667A51", note: "作为沉静、自然的视觉重心" },
+  { name: "玉白", hex: "#F5F2E8", note: "为整体留出轻盈的呼吸感" },
+  { name: "雾蓝", hex: "#91A8B9", note: "用柔和冷调增加层次" },
+  { name: "茶褐", hex: "#8A6C4A", note: "小面积加入温润质感" },
+  { name: "陶土橙", hex: "#B86F52", note: "以低饱和暖色轻轻提亮" },
+  { name: "石墨灰", hex: "#596168", note: "提供清晰而克制的轮廓" },
+  { name: "藤紫", hex: "#81748E", note: "带来柔和、有分寸的变化" },
+  { name: "沙米色", hex: "#D8C7A8", note: "适合作为温和的日常底色" },
+  { name: "松针青", hex: "#3F6655", note: "少量点出清爽的自然气息" },
+  { name: "月岩蓝", hex: "#65758B", note: "营造安静而利落的层次" },
+  { name: "藕粉", hex: "#CDA8A0", note: "小面积使用更显柔和" },
+  { name: "燕麦色", hex: "#CBBFA9", note: "适合衔接深浅不同的单品" },
+  { name: "靛青", hex: "#3F536B", note: "为造型加入稳定的深色锚点" },
+  { name: "鼠尾草绿", hex: "#9AA58D", note: "让自然色调显得舒展" },
+  { name: "烟粉棕", hex: "#A98680", note: "以含蓄暖调丰富细节" },
+];
+
+function choosePalette(avoidColors: string[] = []): [ColorToken, ColorToken, ColorToken] {
+  const safe = PALETTE.filter((color) => !isAvoidedColor(color, avoidColors));
+  const selected = safe.slice(0, 3);
+  for (let index = 0; selected.length < 3; index += 1) {
+    const hex = `#${(0x52605a + index * 0x1f123).toString(16).slice(-6).padStart(6, "0").toUpperCase()}`;
+    const candidate = { name: String.fromCodePoint(0x4e00 + index), hex, note: "以低饱和度保持整体协调" };
+    if (!isAvoidedColor(candidate, avoidColors) && !selected.some((color) => color.hex === hex)) selected.push(candidate);
+  }
+  return selected as [ColorToken, ColorToken, ColorToken];
+}
+
+export function demoReading(options: DemoReadingOptions): DailyReadingV4 {
+  const [primary, supporting, sparingly] = choosePalette(options.profile.avoidColors);
+  const currentSeason = seasonForShanghaiDate(options.date);
+  return {
+    date: options.date,
+    birthChart: options.birthChart,
+    profileNarrative: {
+      title: "可见五行 · 中性化色彩参考",
+      summary: "这里仅按四柱中八个可见干支统计五行出现次数，并把结果转化为审美层面的色彩提示。它只提供透明的文化审美参考，不用于推断个人特征或经历。",
+      elementNotes: ELEMENTS.map((element) => {
+        const item = options.birthChart.elements.find((entry) => entry.element === element)!;
+        return { element, note: `${element}在八个可见字中出现 ${item.count} 次，归为“${item.band}”，可作为调整色彩层次的一个透明参考。` };
+      }),
+      reflectionQuestions: ["今天更想让穿搭呈现轻盈、稳定，还是鲜明的感觉？"],
+    },
+    dailyStyle: {
+      theme: "自然层次",
+      title: "用舒展的配色回应日常节奏",
+      energy: "今天可以从清晰的轮廓与低饱和色层开始，再用一处小面积色彩增添变化。选择让自己感到自在的组合即可。",
+      primaryColors: [primary],
+      supportingColors: [supporting],
+      useSparinglyColors: [sparingly],
+      outfits: options.profile.scenes.map((scene) => {
+        const eligibleItems = options.wardrobe.filter((item) => isWardrobeItemEligible(
+          item,
+          scene,
+          currentSeason,
+          options.profile.avoidColors,
+        ));
+        const dress = eligibleItems.find((item) => item.category === "连衣裙");
+        const top = eligibleItems.find((item) => item.category === "上装");
+        const bottom = eligibleItems.find((item) => item.category === "下装");
+        const completeCombination = hasCompleteOutfit(eligibleItems);
+        const candidates = dress ? [dress] : top && bottom ? [top, bottom] : eligibleItems.slice(0, 3);
+        const missingPieces = completeCombination
+          ? []
+          : [
+            ...(!top ? [`一件适合${scene}与${currentSeason}季的上装`] : []),
+            ...(!bottom ? [`一件适合${scene}与${currentSeason}季的下装`] : []),
+          ];
+        return {
+          scene,
+          title: `${currentSeason}季${scene}的自然层次`,
+          wardrobeItemIds: candidates.map((item) => item.id),
+          missingPieces,
+          formula: candidates.length > 0 ? `已选 ${candidates.length} 件场景与季节匹配单品，再用小面积配饰收束` : "低饱和基础上装 + 基础下装 + 一处轻量配饰",
+          reason: "以真实衣橱中符合当前场景与季节的启用单品为先，保持配色简洁，方便根据当天活动自由调整。",
+          alternative: "可替换为相近明度的基础款，并优先照顾舒适度与场景需要。",
+        };
+      }),
+    },
+    source: "demo",
+    provider: options.provider ?? "演示模式",
+    model: options.model ?? DEMO_MODEL_NAME,
+    promptVersion: options.promptVersion,
+    schemaVersion: DAILY_READING_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+  };
+}
