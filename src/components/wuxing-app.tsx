@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ApiErrorBody, BirthChart, DailyReadingV4, ModelStatus, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
+import type { ApiErrorBody, BirthChart, DailyReadingV5, ModelStatus, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
 import { birthChartStorageSchema, storage } from "@/lib/storage";
 import { useDailyReading } from "@/hooks/use-daily-reading";
 import { AppNav, type AppSection } from "./app-nav";
@@ -43,7 +43,7 @@ export function WuxingApp() {
   const [cacheCount, setCacheCount] = useState(0);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [demoMode, setDemoMode] = useState(false);
-  const [demoReading, setDemoReading] = useState<DailyReadingV4 | null>(null);
+  const [demoReading, setDemoReading] = useState<DailyReadingV5 | null>(null);
   const [privacyDialog, setPrivacyDialog] = useState({ open: false, consentMode: false });
   const lastChartInputRef = useRef("");
   const contentRef = useRef<HTMLElement>(null);
@@ -309,7 +309,7 @@ export function WuxingApp() {
             cacheHit={!demoMode && cacheHit}
             demoMode={demoMode}
             onCancel={cancel}
-            onGenerate={(force = false) => { void generate({ force }); }}
+            onGenerate={(force = false, emotion) => { void generate({ force, currentEmotion: emotion }); }}
             onNavigate={navigate}
             onRetryModelStatus={() => { void loadModelStatus(); }}
             onStartDemo={startDemo}

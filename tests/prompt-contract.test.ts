@@ -8,7 +8,7 @@ import { validBirthChart, validProfile, validWardrobe } from "./fixtures/factori
 
 describe("Prompt v3 privacy and trust contract", () => {
   it("locks the approved prompt version and deterministic fact boundary", () => {
-    expect(PROMPT_VERSION).toBe("style-v3-grounded-bazi-v4");
+    expect(PROMPT_VERSION).toBe("style-v3-grounded-bazi-v5");
     expect(SYSTEM_PROMPT).toContain("birthChart 是服务端确定性计算结果");
     expect(SYSTEM_PROMPT).toMatch(/不得自行排盘、补算、纠正、改写/);
     expect(SYSTEM_PROMPT).toMatch(/只可作为审美权重/);

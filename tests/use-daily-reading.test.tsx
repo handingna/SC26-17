@@ -11,8 +11,8 @@ const modelStatus: ModelStatus = {
   configured: true,
   provider: "Synthetic Provider",
   model: "synthetic-model",
-  promptVersion: "style-v3-grounded-bazi-v4",
-  schemaVersion: "daily-reading-v4",
+  promptVersion: "style-v3-grounded-bazi-v5",
+  schemaVersion: "daily-reading-v5",
 };
 
 describe("useDailyReading async state", () => {

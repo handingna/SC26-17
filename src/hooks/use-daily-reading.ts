@@ -4,7 +4,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type {
   ApiErrorBody,
   BirthChart,
-  DailyReadingV4,
+  DailyReadingV5,
+  EmotionType,
   ModelStatus,
   UserProfileV3,
   WardrobeItemV3,
@@ -61,12 +62,12 @@ export function useDailyReading({
   onStorageChange,
   requestPrivacyConsent,
 }: UseDailyReadingOptions) {
-  const [reading, setReading] = useState<DailyReadingV4 | null>(null);
+  const [reading, setReading] = useState<DailyReadingV5 | null>(null);
   const [generation, setGeneration] = useState<GenerationState>({ status: "idle" });
   const [cacheHit, setCacheHit] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
   const activeFingerprintRef = useRef("");
-  const readingRef = useRef<DailyReadingV4 | null>(null);
+  const readingRef = useRef<DailyReadingV5 | null>(null);
   const generationRef = useRef<GenerationState>({ status: "idle" });
 
   const updateGeneration = useCallback((next: GenerationState) => {
@@ -123,7 +124,7 @@ export function useDailyReading({
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  const generate = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
+  const generate = useCallback(async ({ force = false, currentEmotion }: { force?: boolean; currentEmotion?: EmotionType } = {}) => {
     if (!profile || !profile.birthDate || !profile.birthTime || !profile.scenes.length || !profile.styles.length) {
       updateGeneration({ status: "error", code: "PROFILE_INCOMPLETE", message: "请先补全并保存出生日期、时间、常用场景与风格。", retryable: false });
       return false;
@@ -170,7 +171,7 @@ export function useDailyReading({
       const response = await fetch("/api/daily-reading", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, wardrobe: items }),
+        body: JSON.stringify({ profile, wardrobe: items, ...(currentEmotion ? { currentEmotion } : {}) }),
         signal: controller.signal,
       });
       const body = await response.json().catch(() => null) as unknown;
@@ -186,7 +187,7 @@ export function useDailyReading({
       if (!parsed.success) {
         throw Object.assign(new Error("模型返回的数据结构未通过校验，请重试。"), { code: "MODEL_OUTPUT_INVALID", retryable: true });
       }
-      const next = parsed.data as DailyReadingV4;
+      const next = parsed.data as DailyReadingV5;
       if (!isReadingCompatible(next, profile, items, next.date)) {
         throw Object.assign(new Error("模型引用了不存在的衣物或未选择的场景，请重试。"), { code: "MODEL_OUTPUT_INVALID", retryable: true });
       }

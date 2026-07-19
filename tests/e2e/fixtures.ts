@@ -83,8 +83,8 @@ export const modelReading = {
   source: "model",
   provider: "Synthetic Provider",
   model: "synthetic-model",
-  promptVersion: "style-v3-grounded-bazi-v4",
-  schemaVersion: "daily-reading-v4",
+  promptVersion: "style-v3-grounded-bazi-v5",
+  schemaVersion: "daily-reading-v5",
   generatedAt: new Date().toISOString(),
 } as const;
 
@@ -98,8 +98,8 @@ export async function mockBaseApis(page: Page, configured = false) {
         configured,
         provider: configured ? "Synthetic Provider" : "未配置",
         model: configured ? "synthetic-model" : "未配置",
-        promptVersion: "style-v3-grounded-bazi-v4",
-        schemaVersion: "daily-reading-v4",
+        promptVersion: "style-v3-grounded-bazi-v5",
+        schemaVersion: "daily-reading-v5",
       }),
     });
   });

@@ -29,8 +29,8 @@ test.beforeEach(async ({ page }) => {
         configured: false,
         provider: "未配置",
         model: "未配置",
-        promptVersion: "style-v3-grounded-bazi-v4",
-        schemaVersion: "daily-reading-v4",
+        promptVersion: "style-v3-grounded-bazi-v5",
+        schemaVersion: "daily-reading-v5",
       }),
     });
   });

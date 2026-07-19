@@ -100,7 +100,7 @@ describe("versioned browser storage", () => {
     const otherKey = `${DAILY_CACHE_PREFIX}2026-07-18:other`;
     const reading = makeReading();
     expect(storage.setDailyReading(modelKey, reading)).toBe(true);
-    expect(storage.dailyReading(modelKey)).toEqual(reading);
+    expect(storage.dailyReading(modelKey, "2026-07-18")).toEqual(reading);
     expect(storage.setDailyReading(otherKey, makeReading({ source: "demo" }))).toBe(false);
     expect(storage.dailyReadingCount()).toBe(1);
   });

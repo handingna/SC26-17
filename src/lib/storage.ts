@@ -1,10 +1,10 @@
 import { z } from "zod";
-import type { DailyReadingV4, UserProfileV3, WardrobeItemV3 } from "./types";
+import type { DailyReadingV5, UserProfileV3, WardrobeItemV3 } from "./types";
 import { DAILY_CACHE_PREFIX, localDateKey } from "./cache-key";
 import {
   birthChartSchema,
   birthTimeSchema,
-  dailyReadingV4Schema,
+  dailyReadingV5Schema,
   validateDailyReadingSemantics,
   userProfileV3Schema,
   wardrobeItemV3Schema,
@@ -34,7 +34,7 @@ export const userProfileStorageSchema = userProfileV3Schema.safeExtend({
 export const wardrobeItemStorageSchema = wardrobeItemV3Schema;
 export const wardrobeStorageSchema = wardrobeV3Schema;
 export const birthChartStorageSchema = birthChartSchema;
-export const dailyReadingStorageSchema = dailyReadingV4Schema;
+export const dailyReadingStorageSchema = dailyReadingV5Schema;
 
 let storageError: string | null = null;
 
@@ -241,7 +241,7 @@ function dailyReadingCount() {
 }
 
 export function isReadingCompatible(
-  reading: DailyReadingV4,
+  reading: DailyReadingV5,
   profile: UserProfileV3,
   wardrobe: WardrobeItemV3[],
   expectedDate = localDateKey(),
@@ -276,7 +276,7 @@ export const storage = {
   },
   // An explicit empty wardrobe is different from never initialized.
   clearWardrobe: () => write(NEW_KEYS.wardrobe, []),
-  dailyReading: (cacheKey: string, expectedDate = localDateKey()): DailyReadingV4 | null => {
+  dailyReading: (cacheKey: string, expectedDate = localDateKey()): DailyReadingV5 | null => {
     if (!cacheKey.startsWith(DAILY_CACHE_PREFIX)) return null;
     const result = dailyReadingStorageSchema.safeParse(parsed(cacheKey));
     const keyDate = cacheDateFromKey(cacheKey);
@@ -284,9 +284,9 @@ export const storage = {
       if (raw(cacheKey) !== null) remove(cacheKey);
       return null;
     }
-    return result.data as DailyReadingV4;
+    return result.data as DailyReadingV5;
   },
-  setDailyReading: (cacheKey: string, value: DailyReadingV4) => {
+  setDailyReading: (cacheKey: string, value: DailyReadingV5) => {
     if (!cacheKey.startsWith(DAILY_CACHE_PREFIX) || value.source !== "model") return false;
     const result = dailyReadingStorageSchema.safeParse(value);
     if (!result.success || cacheDateFromKey(cacheKey) !== result.data.date) return false;

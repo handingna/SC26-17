@@ -5,7 +5,7 @@ import {
   isWardrobeItemEligible,
   seasonForShanghaiDate,
 } from "./schemas";
-import { ELEMENTS, type BirthChart, type ColorToken, type DailyReadingV4, type UserProfileV3, type WardrobeItemV3 } from "./types";
+import { ELEMENTS, type BirthChart, type ColorToken, type DailyReadingV5, type UserProfileV3, type WardrobeItemV3 } from "./types";
 
 export const DEMO_MODEL_NAME = "内置演示内容";
 
@@ -48,7 +48,7 @@ function choosePalette(avoidColors: string[] = []): [ColorToken, ColorToken, Col
   return selected as [ColorToken, ColorToken, ColorToken];
 }
 
-export function demoReading(options: DemoReadingOptions): DailyReadingV4 {
+export function demoReading(options: DemoReadingOptions): DailyReadingV5 {
   const [primary, supporting, sparingly] = choosePalette(options.profile.avoidColors);
   const currentSeason = seasonForShanghaiDate(options.date);
   return {
@@ -59,7 +59,7 @@ export function demoReading(options: DemoReadingOptions): DailyReadingV4 {
       summary: "这里仅按四柱中八个可见干支统计五行出现次数，并把结果转化为审美层面的色彩提示。它只提供透明的文化审美参考，不用于推断个人特征或经历。",
       elementNotes: ELEMENTS.map((element) => {
         const item = options.birthChart.elements.find((entry) => entry.element === element)!;
-        return { element, note: `${element}在八个可见字中出现 ${item.count} 次，归为“${item.band}”，可作为调整色彩层次的一个透明参考。` };
+        return { element, note: `${element}在八个可见字中出现 ${item.count} 次，归为"${item.band}"，可作为调整色彩层次的一个透明参考。` };
       }),
       reflectionQuestions: ["今天更想让穿搭呈现轻盈、稳定，还是鲜明的感觉？"],
     },
@@ -98,6 +98,23 @@ export function demoReading(options: DemoReadingOptions): DailyReadingV4 {
           alternative: "可替换为相近明度的基础款，并优先照顾舒适度与场景需要。",
         };
       }),
+      dailyActions: {
+        dos: ["选择让自己感到自在的单品组合", "根据今日活动灵活调整配色层次"],
+        donts: ["刻意追求复杂搭配", "忽略自身的舒适感受"],
+        microTask: "整理一件今天想穿的单品",
+      },
+      dietary: {
+        tips: [
+          { category: "饮品", suggestion: "温热茶饮或清淡汤品", reason: "呼应低饱和色调，以温和感觉开启今天。" },
+          { category: "蔬菜", suggestion: "时令绿叶蔬菜", reason: "与自然色调相映，保持清爽的日常节奏。" },
+        ],
+        avoidNote: "可适当减少辛辣刺激，保持今日的平稳基调。",
+      },
+      emotionAdvice: {
+        current: "今天可以以平和的心态去感受自己的状态，不必强迫任何特定情绪。",
+        guidance: "如有所感，选择一件让自己舒服的单品，让着装成为今天的一个小小仪式。",
+        breathingSpace: "找一个安静的片刻，缓缓深呼吸三次，感受衣物的质感与温度。",
+      },
     },
     source: "demo",
     provider: options.provider ?? "演示模式",

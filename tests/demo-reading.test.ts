@@ -20,7 +20,7 @@ describe("demo reading semantic parity", () => {
       birthChart: validBirthChart,
       profile,
       wardrobe,
-      promptVersion: "style-v3-grounded-bazi-v4",
+      promptVersion: "style-v3-grounded-bazi-v5",
     });
 
     expect(reading.dailyStyle.outfits[0].wardrobeItemIds).not.toContain("red-bottom");

@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { BirthChart, ColorToken, DailyReadingV4, ModelStatus, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
+import type { BirthChart, ColorToken, DailyReadingV5, EmotionType, ModelStatus, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
+import { EMOTIONS } from "@/lib/types";
 import { getClientModelState, type GenerationState } from "@/hooks/use-daily-reading";
 import type { AppSection } from "./app-nav";
 import { BirthChartCard } from "./birth-chart-card";
+import { FortuneSlipCard } from "./fortune-slip-card";
+import { DailyActionsCard } from "./daily-actions-card";
+import { DietaryCard } from "./dietary-card";
 
 function Palette({ title, colors, emptyText }: { title: string; colors: ColorToken[]; emptyText: string }) {
   return (
@@ -30,13 +34,32 @@ function GenerationSkeleton({ startedAt, onCancel }: { startedAt: number; onCanc
   return (
     <section className="generation-progress" role="status" aria-live="polite" aria-busy="true">
       <div className="generation-progress-copy">
-        <div><span className="loading-mark" aria-hidden="true" /><div><strong>正在整理配色与衣橱</strong><p>已用 {(elapsed / 1000).toFixed(1)} 秒 · 通常会在 20 秒内完成</p></div></div>
+        <div><span className="loading-mark" aria-hidden="true" /><div><strong>正在整理配色、衣橱、签语与生活灵感</strong><p>已用 {(elapsed / 1000).toFixed(1)} 秒</p></div></div>
         <button className="outline" type="button" onClick={onCancel}>取消生成</button>
       </div>
       <div className="skeleton-grid" aria-hidden="true">
         <i /><i /><i />
       </div>
     </section>
+  );
+}
+
+function EmotionSelector({ value, onChange }: { value: EmotionType | undefined; onChange: (v: EmotionType | undefined) => void }) {
+  return (
+    <fieldset className="emotion-selector">
+      <legend>当前状态（可选）</legend>
+      <div className="emotion-chips">
+        {EMOTIONS.map((e) => (
+          <button
+            key={e}
+            type="button"
+            className={`emotion-chip${value === e ? " selected" : ""}`}
+            onClick={() => onChange(value === e ? undefined : e)}
+            aria-pressed={value === e}
+          >{e}</button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -63,7 +86,7 @@ export function TodayView({
   profile: UserProfileV3 | null;
   birthChart: BirthChart | null;
   wardrobe: WardrobeItemV3[] | null;
-  reading: DailyReadingV4 | null;
+  reading: DailyReadingV5 | null;
   modelStatus: ModelStatus | null;
   modelStatusError?: string;
   modelStatusLoading?: boolean;
@@ -71,12 +94,13 @@ export function TodayView({
   cacheHit: boolean;
   demoMode?: boolean;
   onCancel?: () => void;
-  onGenerate: (force?: boolean) => void;
+  onGenerate: (force?: boolean, emotion?: EmotionType) => void;
   onUseDemo: () => void;
   onStartDemo?: () => void;
   onRetryModelStatus?: () => void;
   onNavigate: (section: AppSection) => void;
 }) {
+  const [emotion, setEmotion] = useState<EmotionType | undefined>(undefined);
   const complete = Boolean(profile?.birthDate && profile.birthTime && profile.scenes.length && profile.styles.length);
   const wardrobeReady = wardrobe !== null;
   const style = reading?.dailyStyle;
@@ -120,8 +144,9 @@ export function TodayView({
               </div>
             ) : (
               <div className="hero-actions" aria-live="polite" aria-busy={loading}>
+                <EmotionSelector value={emotion} onChange={setEmotion} />
                 {canGenerate ? (
-                  <button className="primary" type="button" disabled={loading} onClick={() => onGenerate(Boolean(reading))}>
+                  <button className="primary" type="button" disabled={loading} onClick={() => onGenerate(Boolean(reading), emotion)}>
                     {loading ? "正在生成…" : reading ? "重新生成（绕过缓存）" : "生成今日灵感"}<span>→</span>
                   </button>
                 ) : (
@@ -133,7 +158,7 @@ export function TodayView({
               </div>
             )}
 
-            {cacheHit && <p className="cache-note">已使用今天相同档案、衣橱、算法与模型版本的缓存结果；可点击“重新生成”绕过缓存。</p>}
+            {cacheHit && <p className="cache-note">已使用今天相同档案、衣橱、算法与模型版本的缓存结果；可点击&quot;重新生成&quot;绕过缓存。</p>}
             {!demoMode && canGenerate && complete && !reading && (
               <p className="privacy-note">首次真实生成会打开站内数据确认；精确生日与时间不会发送给第三方模型。</p>
             )}
@@ -192,8 +217,17 @@ export function TodayView({
 
       {!loading && reading && style && (
         <>
+          <section className="birth-chart-section" aria-labelledby="birth-chart-heading">
+            <div className="section-heading">
+              <p className="eyebrow">CALCULATION BASIS</p>
+              <h2 id="birth-chart-heading">四柱与五行计算依据</h2>
+              <p>以下为透明确定性计算结果，不推算吉凶或人生走势。</p>
+            </div>
+            <BirthChartCard chart={reading.birthChart} compact />
+          </section>
+
           <section className="color-section result-first">
-            <div className="section-heading"><p className="eyebrow">COLOR DIRECTION</p><h2>今日色彩方向</h2><p>先看可以直接使用的配色；“少量使用”只是面积建议，不代表不吉利。</p></div>
+            <div className="section-heading"><p className="eyebrow">COLOR DIRECTION</p><h2>今日色彩方向</h2><p>先看可以直接使用的配色；&quot;少量使用&quot;只是面积建议，不代表不吉利。</p></div>
             <div className="palette-grid">
               <Palette title="主色方向" colors={style.primaryColors} emptyText="暂无主色建议" />
               <Palette title="辅助色" colors={style.supportingColors} emptyText="无需额外辅助色" />
@@ -227,13 +261,40 @@ export function TodayView({
             </div>
           </section>
 
+          <section className="fortune-slip-section" aria-labelledby="fortune-slip-heading">
+            <div className="section-heading"><p className="eyebrow">FORTUNE SLIP</p><h2 id="fortune-slip-heading">今日签语</h2></div>
+            <FortuneSlipCard chart={reading.birthChart} date={reading.date} />
+          </section>
+
+          <section className="daily-actions-section" aria-labelledby="daily-actions-heading">
+            <div className="section-heading"><p className="eyebrow">DAILY ACTIONS</p><h2 id="daily-actions-heading">今日行动建议</h2></div>
+            <DailyActionsCard actions={style.dailyActions} />
+          </section>
+
+          <section className="dietary-section" aria-labelledby="dietary-heading">
+            <div className="section-heading"><p className="eyebrow">DIETARY NOTE</p><h2 id="dietary-heading">今日饮食参考</h2></div>
+            <DietaryCard dietary={style.dietary} />
+          </section>
+
+          {style.emotionAdvice && (
+            <section className="emotion-advice-section" aria-labelledby="emotion-advice-heading">
+              <div className="section-heading"><p className="eyebrow">EMOTION NOTE</p><h2 id="emotion-advice-heading">今日情绪参考</h2></div>
+              <article className="emotion-advice-card">
+                <p className="emotion-current">{style.emotionAdvice.current}</p>
+                <p className="emotion-guidance">{style.emotionAdvice.guidance}</p>
+                <p className="emotion-breathing"><strong>留白：</strong>{style.emotionAdvice.breathingSpace}</p>
+                <p className="emotion-disclaimer">情绪参考来自文化意象，不构成心理建议或诊断。</p>
+              </article>
+            </section>
+          )}
+
           <section className="reflection-section">
             <p className="eyebrow">REFLECTION</p><h2>留给自己的今日小问题</h2>
             <ol>{reading.profileNarrative.reflectionQuestions.map((question) => <li key={question}>{question}</li>)}</ol>
           </section>
 
           <details className="calculation-details">
-            <summary><span><small>CALCULATION BASIS</small><strong>查看计算依据与文化说明</strong></span><b aria-hidden="true">+</b></summary>
+            <summary><span><small>PROFILE NARRATIVE</small><strong>查看档案叙述与文化说明</strong></span><b aria-hidden="true">+</b></summary>
             <div className="calculation-details-body">
               <section className="profile-reading" aria-labelledby="narrative-title">
                 <div className="narrative-intro">
@@ -248,7 +309,6 @@ export function TodayView({
                   })}
                 </div>
               </section>
-              <BirthChartCard chart={reading.birthChart} compact />
             </div>
           </details>
           <p className="disclaimer">传统文化意象与生活方式灵感，仅供娱乐和审美参考；请勿将内容作为任何重要决定的依据。内容来源：{reading.provider} / {reading.model}，Prompt {reading.promptVersion}。</p>

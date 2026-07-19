@@ -141,8 +141,8 @@ describe("TodayView", () => {
     configured: true,
     provider: "ECNU",
     model: "ecnu-max",
-    promptVersion: "style-v3-grounded-bazi-v4",
-    schemaVersion: "daily-reading-v4",
+    promptVersion: "style-v3-grounded-bazi-v5",
+    schemaVersion: "daily-reading-v5",
   };
 
   it("does not block initial profile guidance while model status is loading", () => {

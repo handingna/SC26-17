@@ -212,6 +212,53 @@ code { overflow-wrap: anywhere; }
 .reflection-section li { padding: 22px; border: 1px solid var(--line); background: var(--cream); line-height: 1.7; }
 .disclaimer { max-width: 980px; margin: 20px auto 0; color: var(--muted); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 
+.birth-chart-section { padding: 40px 0 20px; }
+.birth-chart-section .section-heading { margin-bottom: 4px; }
+
+.emotion-selector { min-width: 100%; margin: 0 0 4px; border: 0; padding: 0; }
+.emotion-selector legend { margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.emotion-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.emotion-chip { min-height: 38px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--cream); color: var(--muted); font-size: 13px; }
+.emotion-chip:hover { border-color: var(--sage); color: var(--ink); }
+.emotion-chip.selected { border-color: var(--sage); background: var(--sage-light); color: var(--ink); font-weight: 700; }
+
+.fortune-slip-section, .daily-actions-section, .dietary-section, .emotion-advice-section { padding: 40px 0 20px; }
+.fortune-slip-section { border-top: 1px solid var(--line); }
+.fortune-slip-card { padding: 30px; border: 1px solid var(--line); background: var(--cream); }
+.fortune-slip-card.element-wood { border-left: 4px solid #5f8a4a; }
+.fortune-slip-card.element-fire { border-left: 4px solid #b5482f; }
+.fortune-slip-card.element-earth { border-left: 4px solid #a8823f; }
+.fortune-slip-card.element-metal { border-left: 4px solid #8a8f96; }
+.fortune-slip-card.element-water { border-left: 4px solid #3f7a94; }
+.fortune-slip-title { margin: 0 0 12px; font: 28px Georgia, "Songti SC", serif; }
+.fortune-slip-body { margin: 0; color: var(--ink-soft); line-height: 1.8; overflow-wrap: anywhere; }
+.fortune-slip-intention, .micro-task, .emotion-breathing {
+  margin-top: 16px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  border-left: 2px solid var(--sage);
+  background: #edf1e8;
+  overflow-wrap: anywhere;
+}
+.intention-label, .micro-task-label { flex: 0 0 auto; color: var(--sage); font-size: 12px; font-weight: 700; }
+
+.daily-actions-card, .dietary-card, .emotion-advice-card { padding: 28px; border: 1px solid var(--line); background: var(--cream); }
+.daily-actions-card h3, .dietary-card h3 { margin: 0 0 18px; font: 24px Georgia, "Songti SC", serif; }
+.actions-columns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.actions-do strong, .actions-dont strong { display: block; margin-bottom: 8px; color: var(--sage); font-size: 13px; }
+.actions-do ul, .actions-dont ul { margin: 0; padding-left: 20px; color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }
+
+.dietary-tips { display: grid; gap: 14px; }
+.dietary-tip { min-width: 0; display: grid; grid-template-columns: 70px 1fr; gap: 14px; padding: 14px; background: #eff0e8; }
+.tip-category { color: var(--sage); font-size: 12px; font-weight: 700; }
+.dietary-tip p { margin: 4px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.dietary-avoid { margin: 16px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.dietary-disclaimer, .emotion-disclaimer { margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+.emotion-current, .emotion-guidance { color: var(--ink-soft); line-height: 1.8; overflow-wrap: anywhere; }
+
 .page-header { margin: 28px 0 40px; }
 .page-header h1 { font-size: clamp(40px, 6vw, 60px); }
 .page-header > p:last-child { max-width: 720px; color: var(--muted); line-height: 1.8; }
@@ -346,6 +393,8 @@ fieldset legend { margin-bottom: 9px; color: var(--ink-soft); font-size: 14px; f
   .outfit-section { padding: 48px 18px; }
   .section-heading h2 { font-size: 35px; }
   .reflection-section ol, .form-two, .choice-grid.styles, .item-form-grid, .data-stats { grid-template-columns: 1fr; }
+  .actions-columns { grid-template-columns: 1fr; }
+  .dietary-tip { grid-template-columns: 1fr; }
   .choice-grid { grid-template-columns: repeat(3, 1fr); }
   .profile-form, .item-form, .console-card { padding: 22px 18px; }
   .wardrobe-heading { align-items: stretch; flex-direction: column; }

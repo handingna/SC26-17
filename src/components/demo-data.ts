@@ -1,4 +1,4 @@
-import type { BirthChart, DailyReadingV4, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
+import type { BirthChart, DailyReadingV5, UserProfileV3, WardrobeItemV3 } from "@/lib/types";
 import { localDateKey } from "@/lib/cache-key";
 
 /**
@@ -68,7 +68,7 @@ export const SAMPLE_WARDROBE: WardrobeItemV3[] = [
   },
 ];
 
-export function createQuickDemoReading(date = localDateKey()): DailyReadingV4 {
+export function createQuickDemoReading(date = localDateKey()): DailyReadingV5 {
   return {
     date,
     birthChart: QUICK_DEMO_BIRTH_CHART,
@@ -118,12 +118,29 @@ export function createQuickDemoReading(date = localDateKey()): DailyReadingV4 {
           alternative: "需要更随性时，可将衬衫下摆自然放松，并减少结构感配饰。",
         },
       ],
+      dailyActions: {
+        dos: ["享受清晨的自然光线", "选择透气舒适的面料"],
+        donts: ["过度搭配复杂层次", "忽视今日的舒适感受"],
+        microTask: "整理一件今天最想穿的单品",
+      },
+      dietary: {
+        tips: [
+          { category: "饮品", suggestion: "绿茶或薄荷冷饮", reason: "与清爽色调呼应，保持夏日轻盈感。" },
+          { category: "蔬菜", suggestion: "黄瓜或时令绿叶菜", reason: "低饱和自然色系的夏日延伸，清脆爽口。" },
+        ],
+        avoidNote: "可适当减少油腻厚重的食物，与今日清爽的穿搭基调保持一致。",
+      },
+      emotionAdvice: {
+        current: "今天以平和的心态感受夏日的节奏，不必强求任何特定的状态。",
+        guidance: "让穿搭成为今天的一个小仪式，以清爽的配色开启轻盈的一天。",
+        breathingSpace: "找一个片刻，感受衣物的质感，缓缓深呼吸，让自己完全进入当下。",
+      },
     },
     source: "demo",
     provider: "内存合成演示",
     model: "fixed-demo",
-    promptVersion: "style-v3-grounded-bazi-v4",
-    schemaVersion: "daily-reading-v4",
+    promptVersion: "style-v3-grounded-bazi-v5",
+    schemaVersion: "daily-reading-v5",
     generatedAt: new Date().toISOString(),
   };
 }

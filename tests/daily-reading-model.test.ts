@@ -94,7 +94,7 @@ describe("model generation control flow", () => {
       source: "model",
       provider: "Synthetic Provider",
       model: "synthetic-model",
-      promptVersion: "style-v3-grounded-bazi-v4",
+      promptVersion: "style-v3-grounded-bazi-v5",
     });
     expect(openAiMocks.createCompletion).toHaveBeenCalledOnce();
     expect(openAiMocks.constructorOptions).toHaveBeenCalledWith(expect.objectContaining({
@@ -104,7 +104,7 @@ describe("model generation control flow", () => {
     expect(params).toMatchObject({
       model: "synthetic-model",
       temperature: 0.4,
-      max_tokens: 1_800,
+      max_tokens: 2_400,
       response_format: { type: "json_object" },
     });
     const serializedMessages = JSON.stringify(params.messages);

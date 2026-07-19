@@ -7,7 +7,7 @@ const routeMocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/daily-reading", () => ({
   createDailyReading: routeMocks.createDailyReading,
-  PROMPT_VERSION: "style-v3-grounded-bazi-v4",
+  PROMPT_VERSION: "style-v3-grounded-bazi-v5",
 }));
 
 vi.mock("@/lib/model-config", () => ({
@@ -190,8 +190,8 @@ describe("API route contracts", () => {
       configured: true,
       provider: "Synthetic Provider",
       model: "synthetic-model",
-      promptVersion: "style-v3-grounded-bazi-v4",
-      schemaVersion: "daily-reading-v4",
+      promptVersion: "style-v3-grounded-bazi-v5",
+      schemaVersion: "daily-reading-v5",
     });
     expect(body).not.toHaveProperty("apiKey");
     expect(body).not.toHaveProperty("baseURL");

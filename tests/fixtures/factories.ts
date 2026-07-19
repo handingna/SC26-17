@@ -1,6 +1,6 @@
 import type {
   BirthChart,
-  DailyReadingV4,
+  DailyReadingV5,
   Scene,
   UserProfileV3,
   WardrobeItemV3,
@@ -80,11 +80,27 @@ export function makeModelOutput(scenes: Scene[] = ["通勤"]) {
         reason: "优先使用已启用且符合场景的真实单品。",
         alternative: "没有对应单品时，用明度相近的中性色替换。",
       })),
+      dailyActions: {
+        dos: ["选择让自己感到自在的单品", "注意当日场景与季节需求"],
+        donts: ["过度追求复杂配色"],
+        microTask: "整理一件今天想穿的单品",
+      },
+      dietary: {
+        tips: [
+          { category: "饮品", suggestion: "温热茶饮", reason: "以温和感觉开启今天。" },
+        ],
+        avoidNote: "可适当减少辛辣刺激。",
+      },
+      emotionAdvice: {
+        current: "以平和心态感受今日状态。",
+        guidance: "选择让自己舒适的搭配作为今天的一个小仪式。",
+        breathingSpace: "缓缓深呼吸三次，感受衣物的质感。",
+      },
     },
   };
 }
 
-export function makeReading(overrides: Partial<DailyReadingV4> = {}): DailyReadingV4 {
+export function makeReading(overrides: Partial<DailyReadingV5> = {}): DailyReadingV5 {
   const output = makeModelOutput();
   return {
     date: "2026-07-18",
@@ -98,13 +114,13 @@ export function makeReading(overrides: Partial<DailyReadingV4> = {}): DailyReadi
         { element: "金", note: "金在八个可见干支中出现 3 次，归为多，仅作为色彩层次参考。" },
         { element: "水", note: "水在八个可见干支中出现 0 次，归为少，仅作为色彩层次参考。" },
       ],
-    } as DailyReadingV4["profileNarrative"],
-    dailyStyle: output.dailyStyle as DailyReadingV4["dailyStyle"],
+    } as DailyReadingV5["profileNarrative"],
+    dailyStyle: output.dailyStyle as DailyReadingV5["dailyStyle"],
     source: "model",
     provider: "Synthetic Provider",
     model: "synthetic-model",
-    promptVersion: "style-v3-grounded-bazi-v4",
-    schemaVersion: "daily-reading-v4",
+    promptVersion: "style-v3-grounded-bazi-v5",
+    schemaVersion: "daily-reading-v5",
     generatedAt: "2026-07-18T00:00:00.000Z",
     ...overrides,
   };

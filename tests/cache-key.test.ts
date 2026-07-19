@@ -12,8 +12,8 @@ const context = {
   model: "ecnu-max",
   source: "model" as const,
   algorithmVersion: "visible-elements-v1",
-  promptVersion: "style-v3-grounded-bazi-v4",
-  schemaVersion: "daily-reading-v4",
+  promptVersion: "style-v3-grounded-bazi-v5",
+  schemaVersion: "daily-reading-v5",
 };
 
 describe("daily.v4 cache key", () => {
@@ -32,7 +32,7 @@ describe("daily.v4 cache key", () => {
     ["model", { ...context, model: "other-model" }],
     ["algorithm", { ...context, algorithmVersion: "visible-elements-v2" }],
     ["prompt", { ...context, promptVersion: "style-v4" }],
-    ["schema", { ...context, schemaVersion: "daily-reading-v5" }],
+    ["schema", { ...context, schemaVersion: "daily-reading-v6" }],
     ["source", { ...context, source: "demo" as const }],
   ])("changes when %s changes", (_label, changed) => {
     expect(getDailyCacheKey(validProfile, validWardrobe, context, "2026-07-18"))

@@ -2,15 +2,16 @@ import { z } from "zod";
 import {
   CATEGORIES,
   ELEMENTS,
+  EMOTIONS,
   SCENES,
   SEASONS,
-  type DailyReadingRequestV4,
+  type DailyReadingRequestV5,
   type Scene,
   type Season,
   type WardrobeItemV3,
 } from "./types";
 
-export const DAILY_READING_SCHEMA_VERSION = "daily-reading-v4";
+export const DAILY_READING_SCHEMA_VERSION = "daily-reading-v5";
 export const MAX_REQUEST_BYTES = 64 * 1024;
 export const MAX_WARDROBE_ITEMS = 60;
 
@@ -193,6 +194,12 @@ export const dailyReadingRequestV4Schema = z.object({
   wardrobe: wardrobeV3Schema,
 }).strict();
 
+export const dailyReadingRequestV5Schema = z.object({
+  profile: userProfileV3Schema,
+  wardrobe: wardrobeV3Schema,
+  currentEmotion: z.enum(EMOTIONS).optional(),
+}).strict();
+
 export const elementSchema = z.enum(ELEMENTS);
 export const elementBandSchema = z.enum(["少", "适中", "多"]);
 
@@ -333,6 +340,14 @@ function generalProseSegments(reading: DailyReadingModelOutput): string[] {
       ...reading.dailyStyle.supportingColors,
       ...reading.dailyStyle.useSparinglyColors,
     ].flatMap((color) => [color.name, color.note]),
+    ...reading.dailyStyle.dailyActions.dos,
+    ...reading.dailyStyle.dailyActions.donts,
+    reading.dailyStyle.dailyActions.microTask,
+    ...reading.dailyStyle.dietary.tips.flatMap((tip) => [tip.suggestion, tip.reason]),
+    reading.dailyStyle.dietary.avoidNote,
+    reading.dailyStyle.emotionAdvice.current,
+    reading.dailyStyle.emotionAdvice.guidance,
+    reading.dailyStyle.emotionAdvice.breathingSpace,
   ];
 }
 
@@ -387,6 +402,24 @@ export const dailyReadingModelOutputSchema = z.object({
     supportingColors: z.array(colorTokenSchema).min(1).max(3),
     useSparinglyColors: z.array(colorTokenSchema).min(1).max(2),
     outfits: z.array(outfitSuggestionV4Schema).min(1).max(SCENES.length),
+    dailyActions: z.object({
+      dos: z.array(shortText(80)).min(1).max(3).refine(uniqueStrings, "不能包含重复项"),
+      donts: z.array(shortText(80)).min(1).max(3).refine(uniqueStrings, "不能包含重复项"),
+      microTask: shortText(60),
+    }).strict(),
+    dietary: z.object({
+      tips: z.array(z.object({
+        category: shortText(20),
+        suggestion: shortText(80),
+        reason: shortText(120),
+      }).strict()).min(1).max(3),
+      avoidNote: shortText(100),
+    }).strict(),
+    emotionAdvice: z.object({
+      current: shortText(200),
+      guidance: shortText(200),
+      breathingSpace: shortText(120),
+    }).strict(),
   }).strict(),
 }).strict().superRefine((reading, context) => {
   const colors = [
@@ -430,7 +463,7 @@ export const dailyReadingModelOutputSchema = z.object({
 });
 
 /** Shared server-response/browser-cache contract; preserves all model-output refinements. */
-export const dailyReadingV4Schema = dailyReadingModelOutputSchema.safeExtend({
+export const dailyReadingV5Schema = dailyReadingModelOutputSchema.safeExtend({
   profileNarrative: publicProfileNarrativeSchema,
   date: isoDateSchema,
   birthChart: birthChartSchema,
@@ -441,6 +474,9 @@ export const dailyReadingV4Schema = dailyReadingModelOutputSchema.safeExtend({
   schemaVersion: shortText(80),
   generatedAt: z.string().datetime(),
 });
+
+/** Keep v4 alias pointing to v5 schema — the storage key change (daily-reading-v5) is the migration boundary. */
+export const dailyReadingV4Schema = dailyReadingV5Schema;
 
 export type DailyReadingModelOutput = z.infer<typeof dailyReadingModelOutputSchema>;
 
@@ -545,7 +581,7 @@ export function validateModelOutput(
 }
 
 export type DailyReadingSemanticValidation =
-  | { success: true; data: z.infer<typeof dailyReadingV4Schema> }
+  | { success: true; data: z.infer<typeof dailyReadingV5Schema> }
   | { success: false; issues: string[] };
 
 export function validateDailyReadingSemantics(
@@ -554,7 +590,7 @@ export function validateDailyReadingSemantics(
   wardrobe: readonly WardrobeItemV3[],
   date?: string,
 ): DailyReadingSemanticValidation {
-  const parsed = dailyReadingV4Schema.safeParse(value);
+  const parsed = dailyReadingV5Schema.safeParse(value);
   if (!parsed.success) {
     return { success: false, issues: parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`) };
   }
@@ -573,6 +609,6 @@ export function validateDailyReadingSemantics(
   return issues.length > 0 ? { success: false, issues } : { success: true, data: parsed.data };
 }
 
-export function parseDailyReadingRequest(value: unknown): DailyReadingRequestV4 {
-  return dailyReadingRequestV4Schema.parse(value) as DailyReadingRequestV4;
+export function parseDailyReadingRequest(value: unknown): DailyReadingRequestV5 {
+  return dailyReadingRequestV5Schema.parse(value) as DailyReadingRequestV5;
 }
