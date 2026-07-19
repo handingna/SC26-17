@@ -250,8 +250,8 @@ export function ProfileView({
         <section className="next-step-card" aria-label="档案保存后的下一步">
           <div><p className="eyebrow">PROFILE READY</p><h2>档案已经准备好</h2><p>可以先准备衣橱，让结果引用真实单品；也可以空衣橱直接生成。</p></div>
           <div className="next-step-actions">
-            <button className="primary" type="button" onClick={() => onNavigate("wardrobe")}>下一步：准备衣橱</button>
-            <button className="outline" type="button" onClick={onSkipWardrobe}>跳过衣橱，去生成</button>
+            <button className="next-step-primary" type="button" onClick={() => onNavigate("wardrobe")}>下一步：准备衣橱 <span aria-hidden="true">→</span></button>
+            <button className="next-step-secondary" type="button" onClick={onSkipWardrobe}>跳过衣橱，去生成</button>
           </div>
         </section>
       )}

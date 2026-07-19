@@ -149,7 +149,6 @@ export function TodayView({
                 ) : (
                   <button className="primary" type="button" onClick={onUseDemo}>查看演示内容 <span>→</span></button>
                 )}
-                {!reading && <button className="outline" type="button" onClick={onStartDemo}>{canGenerate ? "先看合成示例" : "快速体验合成示例"}</button>}
                 {reading?.source === "model" && <span className="source-badge model">模型生成</span>}
                 {reading?.source === "demo" && <span className="source-badge demo">演示内容</span>}
               </div>
